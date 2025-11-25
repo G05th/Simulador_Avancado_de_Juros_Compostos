@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Menu — Simulador de Juros Compostos</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.min.js" integrity="sha512-n/G+dROKbKL3GVngGWmWfwK0yPctjZQM752diVYnXZtD/48agpUKLIn0xDQL9ydZ91x6BiOmTIFwWjjFi2kEFg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -67,10 +68,140 @@
 </nav>
 
 <!-- Conteúdo de exemplo -->
-<main style="max-width:1200px;margin:2rem auto;padding:0 1rem">
-  <h1>Exemplo de página</h1>
-  <p class="muted">Conteúdo fictício para demonstrar o menu.</p>
-</main>
+<main class="container" role="main">
+    <header class="page-header">
+      <div>
+        <h1>Simulador de Juros Compostos</h1>
+        <p class="muted">Preencha os dados e clique em Calcular. Abra Avançado para aportes e inflação.</p>
+      </div>
+      <div class="controls-header">
+        <button class="btn ghost" id="btnReset">Reset</button>
+        <button class="btn primary" id="btnNew">Nova Simulação</button>
+      </div>
+    </header>
+
+    <section class="grid" aria-label="Área de simulação">
+      <!-- FORM -->
+      <form id="simForm" class="card" aria-labelledby="formTitle" onsubmit="return false;">
+        <h2 id="formTitle">Parâmetros da Simulação</h2>
+
+        <div class="row">
+          <div class="col">
+            <label for="capital">Capital inicial (AOA)</label>
+            <input id="capital" type="number" min="0" step="0.01" value="10000" required />
+            <div class="small">Ex.: 100000</div>
+          </div>
+          <div class="col">
+            <label for="rate">Taxa anual (%)</label>
+            <input id="rate" type="number" min="0" step="0.01" value="6" required />
+            <div class="small">Ex.: 6 (para 6% ao ano)</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label for="period">Período</label>
+            <input id="period" type="number" min="1" step="1" value="10" required />
+            <div class="small">Número de anos ou meses (ver unidade)</div>
+          </div>
+          <div class="col">
+            <label for="periodUnit">Unidade</label>
+            <select id="periodUnit">
+              <option value="anos" selected>Anos</option>
+              <option value="meses">Meses</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label for="compounding">Capitalização</label>
+            <select id="compounding">
+              <option value="anual" selected>Anual</option>
+              <option value="mensal">Mensal</option>
+            </select>
+          </div>
+
+          <div class="col">
+            <label for="localeCurrency">Moeda / Locale</label>
+            <select id="localeCurrency">
+              <option value="pt-AO|AOA" selected>pt-AO / AOA</option>
+              <option value="pt-BR|BRL" >pt-BR / BRL</option>
+              <option value="pt-PT|EUR">pt-PT / EUR</option>
+              <option value="en-US|USD">en-US / USD</option>
+            </select>
+          </div>
+        </div>
+
+        <hr>
+
+        <details id="advanced">
+          <summary>Avançado (Aportes e Inflação)</summary>
+          <div class="advanced-body">
+            <div class="row">
+              <div class="col">
+                <label for="contribution">Aporte periódico (valor)</label>
+                <input id="contribution" type="number" min="0" step="0.01" value="200" />
+                <div class="small">Ex.: 200 (mensal se unidade for meses)</div>
+              </div>
+              <div class="col">
+                <label for="inflation">Inflação anual (%)</label>
+                <input id="inflation" type="number" min="0" step="0.01" value="3" />
+                <div class="small">Usado para calcular taxa real</div>
+              </div>
+            </div>
+            <div class="small muted">Aportes são aplicados após juros de cada período (config padrão).</div>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button class="btn primary" id="btnCalculate" type="button">Calcular</button>
+          <button class="btn ghost" id="btnExportCsv" type="button">Exportar CSV</button>
+          <div class="right small muted" aria-live="polite" id="status">Pronto</div>
+        </div>
+      </form>
+
+      <!-- RESULTS -->
+      <section class="card" aria-labelledby="resultsTitle">
+        <h2 id="resultsTitle">Resultados</h2>
+
+        <div class="result-block">
+          <div class="muted">Montante final (nominal)</div>
+          <div id="finalAmount" class="result-amount"> 0,00 Kz</div>
+          <div class="result-sub small muted" id="summaryRow">
+            <div>Taxa real: <span id="realRate">—</span></div>
+            <div>Períodos: <span id="periodsInfo">—</span></div>
+          </div>
+        </div>
+
+        <div>
+          <h3>Tabela de evolução</h3>
+          <div class="table-wrapper" id="tableWrapper" role="region" aria-label="Tabela de evolução">
+            <table id="amortTable" aria-describedby="tableDesc">
+              <caption id="tableDesc" class="visually-hidden">Evolução por período do investimento</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Período</th>
+                  <th scope="col">Saldo Inicial</th>
+                  <th scope="col">Juros</th>
+                  <th scope="col">Aporte</th>
+                  <th scope="col">Saldo Final</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" class="muted empty-cell">Sem dados — calcule acima</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <h3>Gráfico</h3>
+          <canvas id="chart" height="180" aria-label="Gráfico de evolução"></canvas>
+        </div>
+      </section>
+    </section>
+  </main>
 
 <script src="../js/dropdowns.js"></script>
 
