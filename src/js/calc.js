@@ -1,36 +1,55 @@
-export function applyInterest(saldo, taxa){
-  return saldo * (1 + taxa)
+export function applyInterest(saldo, taxaPeriodoDecimal){
+  return saldo * (1 + taxaPeriodoDecimal);
 }
 
 export function applyContribution(saldo, aporte){
   return saldo + aporte;
 }
 
-export function generateTimeLine(config){
-  const {capital, taxa, periodos, aporteMensal = 0 } = config
+export function derivePeriodRate(taxaAnualPercent, compounding, periodUnit){
+  const anualDecimal = taxaAnualPercent / 100;
+  if (compounding === 'mensal'){
+    return { taxaPeriodoDecimal: Math.pow(1 + anualDecimal, 1/12) - 1, periodsMultiplier: 12 };
+  }
+  return { taxaPeriodoDecimal: anualDecimal, periodsMultiplier: 1 };
+}
+
+export function generateTimeline({ capital, taxaAnual, periodos, periodUnit = 'anos', compounding = 'anual', aporte = 0, inflation = null }){
+  const { taxaPeriodoDecimal, periodsMultiplier } = derivePeriodRate(taxaAnual, compounding, periodUnit);
+
+  const totalPeriods = periodUnit === 'anos' ? periodos * periodsMultiplier : periodos;
+
   let saldo = capital;
-  const timeLine = [];
+  const timeline = [];
 
-  for(let p = 1; p <= periodos; p++){
+  for (let p = 1; p <= totalPeriods; p++){
     const inicial = saldo;
-    const comJuros = applyInterest(inicial, taxa)
-    const final = applyContribution(comJuros, aporteMensal)
+    const comJuros = applyInterest(inicial, taxaPeriodoDecimal);
+    const final = applyContribution(comJuros, aporte);
 
-    timeLine.push({
-      periodo: p,
-      inicial:inicial,
-      interest: comJuros - inicial,
-      contribution:aporteMensal,
-      final: final
+    timeline.push({
+      period: p,
+      initial: Number(inicial),
+      interest: Number((comJuros - inicial)),
+      contribution: Number(aporte),
+      final: Number(final)
     });
 
     saldo = final;
   }
-  return timeLine;
+
+  const montante = saldo;
+
+  let taxaReal = null;
+  if (inflation !== null && inflation !== undefined){
+    const iNominal = taxaAnual / 100;
+    const iInflation = inflation / 100;
+    taxaReal = (1 + iNominal) / (1 + iInflation) - 1;
+  }
+
+  return { timeline, montante, taxaReal, periodsTotal: totalPeriods };
 }
 
-export function calcCompound(capital, taxa, periodo){
-  return capital * Math.pow(1 + taxa, periodo)
+export function calcCompound(capital, taxaPeriodoDecimal, totalPeriods){
+  return capital * Math.pow(1 + taxaPeriodoDecimal, totalPeriods);
 }
-
-console.log(calcCompound(1000, 0.02, 60))
