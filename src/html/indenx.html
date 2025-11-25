@@ -1,15 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-
-  <title>Document</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Menu — Simulador de Juros Compostos</title>
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
+<nav class="nav" role="navigation" aria-label="Menu principal">
+  <div class="nav__inner">
+    <a href="#" class="brand" aria-label="Ir para o início">
+      <span class="brand__logo" aria-hidden="true"></span>
+      <span class="brand__title">JurosSim</span>
+    </a>
 
-  <script src="../js/main.js"></script>
+    <!-- Toggle para mobile -->
+    <button class="nav-toggle" id="navToggle" aria-controls="primaryMenu" aria-expanded="false" title="Abrir menu">
+      <!-- hambúrguer SVG -->
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+      </svg>
+    </button>
+
+    <ul id="primaryMenu" class="nav-menu" role="menubar" aria-hidden="true">
+      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#" aria-current="page">Início</a></li>
+
+      <li class="nav-item dropdown" role="none">
+        <button class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">Simulação
+          <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="margin-left:6px">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </button>
+        <ul class="dropdown-menu" role="menu" aria-label="Simulação">
+          <li role="none"><a role="menuitem" href="#">Básica</a></li>
+          <li role="none"><a role="menuitem" href="#">Avançada</a></li>
+        </ul>
+      </li>
+
+      <li class="nav-item dropdown" role="none">
+        <button class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">Cenários
+          <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="margin-left:6px">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </button>
+        <ul class="dropdown-menu" role="menu" aria-label="Cenários">
+          <li role="none"><a role="menuitem" href="#">Comparação</a></li>
+          <li role="none"><a role="menuitem" href="#">Histórico</a></li>
+          <li role="none"><a role="menuitem" href="#">Salvar / Carregar</a></li>
+        </ul>
+      </li>
+
+      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#">Gráficos</a></li>
+      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#">Tabela</a></li>
+
+      <li class="menu-divider" aria-hidden="true"></li>
+
+      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#">Como funciona</a></li>
+      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#">Sobre</a></li>
+
+      <li class="nav-cta" role="none" style="margin-left:0.4rem">
+        <button onclick="location.href='#'" aria-label="Criar nova simulação">Nova Simulação</button>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Conteúdo de exemplo -->
+<main style="max-width:1200px;margin:2rem auto;padding:0 1rem">
+  <h1>Exemplo de página</h1>
+  <p class="muted">Conteúdo fictício para demonstrar o menu.</p>
+</main>
+
+<script src="../js/dropdowns.js"></script>
+
 </body>
 </html>
