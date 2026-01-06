@@ -4,72 +4,41 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Menu — Simulador de Juros Compostos</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.min.js" integrity="sha512-n/G+dROKbKL3GVngGWmWfwK0yPctjZQM752diVYnXZtD/48agpUKLIn0xDQL9ydZ91x6BiOmTIFwWjjFi2kEFg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css"
+    rel="stylesheet"
+/>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
+<header class="header">
+         <nav class="nav container">
+            <div class="nav__data">
+               <a href="#" class="nav__logo">
+                  <i class="ri-planet-line"></i> JurosSim
+               </a>
 
-<nav class="nav" role="navigation" aria-label="Menu principal">
-  <div class="nav__inner">
-    <a href="#" class="brand" aria-label="Ir para o início">
-      <span class="brand__logo" aria-hidden="true"></span>
-      <span class="brand__title">JurosSim</span>
-    </a>
+              <div class="nav__toggle" id="nav-toggle" aria-controls="nav-menu" aria-expanded="false" aria-label="Abrir menu">
+                <i class="ri-menu-line nav__burger" aria-hidden="true"></i>
+                <i class="ri-close-line nav__close" aria-hidden="true"></i>
+              </div>
+            </div>
 
-    <!-- Toggle para mobile -->
-    <button class="nav-toggle" id="navToggle" aria-controls="primaryMenu" aria-expanded="false" title="Abrir menu">
-      <!-- hambúrguer SVG -->
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-      </svg>
-    </button>
-
-    <ul id="primaryMenu" class="nav-menu" role="menubar" aria-hidden="true">
-      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#" aria-current="page">Início</a></li>
-
-      <li class="nav-item dropdown" role="none">
-        <button class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">Simulação
-          <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="margin-left:6px">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </button>
-        <ul class="dropdown-menu" role="menu" aria-label="Simulação">
-          <li role="none"><a role="menuitem" href="#">Básica</a></li>
-          <li role="none"><a role="menuitem" href="#">Avançada</a></li>
-        </ul>
-      </li>
-
-      <li class="nav-item dropdown" role="none">
-        <button class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">Cenários
-          <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="margin-left:6px">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </button>
-        <ul class="dropdown-menu" role="menu" aria-label="Cenários">
-          <li role="none"><a role="menuitem" href="#">Comparação</a></li>
-          <li role="none"><a role="menuitem" href="#">Histórico</a></li>
-          <li role="none"><a role="menuitem" href="#">Salvar / Carregar</a></li>
-        </ul>
-      </li>
-
-      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#">Gráficos</a></li>
-      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#">Tabela</a></li>
-
-      <li class="menu-divider" aria-hidden="true"></li>
-
-      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#">Como funciona</a></li>
-      <li class="nav-item" role="none"><a class="nav-link" role="menuitem" href="#">Sobre</a></li>
-
-      <li class="nav-cta" role="none" style="margin-left:0.4rem">
-        <button onclick="location.href='#'" aria-label="Criar nova simulação">Nova Simulação</button>
-      </li>
-    </ul>
-  </div>
-</nav>
+            <!--=============== NAV MENU ===============-->
+            <div class="nav__menu" id="nav-menu" role="navigation" aria-label="Navegação principal">
+               <ul class="nav__list">
+                  <li><a href="#" class="nav__link">Simulador</a></li>
+                  <li><a href="#savedList" class="nav__link">Meus Cenários</a></li>
+                  <li><a href="#" class="nav__link">Sobre</a></li>
+               </ul>
+            </div>
+         </nav>
+      </header>
 
 <!-- Conteúdo de exemplo -->
-<main class="container" role="main">
-    <header class="page-header">
+<main id="mainContent" class="container" role="main" tabindex="-1">
+    <section class="page-header">
       <div>
         <h1>Simulador de Juros Compostos</h1>
         <p class="muted">Preencha os dados e clique em Calcular. Abra Avançado para aportes e inflação.</p>
@@ -78,7 +47,7 @@
         <button class="btn ghost" id="btnReset">Reset</button>
         <button class="btn primary" id="btnNew">Nova Simulação</button>
       </div>
-    </header>
+    </section>
 
     <section class="grid" aria-label="Área de simulação">
       <!-- FORM -->
@@ -182,10 +151,10 @@
               <thead>
                 <tr>
                   <th scope="col">Período</th>
-                  <th scope="col">Saldo Inicial</th>
-                  <th scope="col">Juros</th>
-                  <th scope="col">Aporte</th>
-                  <th scope="col">Saldo Final</th>
+                  <th scope="col" class="num">Saldo Inicial</th>
+                  <th scope="col" class="num">Juros</th>
+                  <th scope="col" class="num">Aporte</th>
+                  <th scope="col" class="num">Saldo Final</th>
                 </tr>
               </thead>
               <tbody>
@@ -199,10 +168,20 @@
           <h3>Gráfico</h3>
           <canvas id="chart" height="180" aria-label="Gráfico de evolução"></canvas>
         </div>
+
+        <div class="card" style="margin-top:1rem">
+          <h3>Meus Cenários</h3>
+          <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
+            <input id="saveName" type="text" placeholder="Nome do cenário (ex: Aposentadoria)" style="flex:1;padding:8px;border-radius:6px;border:1px solid #eef4f5" />
+            <button class="btn primary" id="btnSaveScenario">Salvar</button>
+          </div>
+          <div id="savedList" style="max-height:220px;overflow:auto;border-top:1px dashed #eef4f5;padding-top:.5rem"></div>
+        </div>
       </section>
     </section>
   </main>
 
+<script type="module" src="../js/main.js"></script>
 <script src="../js/dropdowns.js"></script>
 
 </body>
