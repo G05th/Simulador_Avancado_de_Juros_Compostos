@@ -25,13 +25,18 @@ export function generateTimeline({ capital, taxaAnual, periodos, periodUnit = 'a
   for (let p = 1; p <= totalPeriods; p++){
     const inicial = saldo;
     const comJuros = applyInterest(inicial, taxaPeriodoDecimal);
-    const final = applyContribution(comJuros, aporte);
+
+    // Aporte is always monthly. If period is years, we assume 12 contributions in that period.
+    // If period is months, we assume 1 contribution per period.
+    const contributionForPeriod = periodUnit === 'anos' ? aporte * 12 : aporte;
+
+    const final = applyContribution(comJuros, contributionForPeriod);
 
     timeline.push({
       period: p,
       initial: Number(inicial),
       interest: Number((comJuros - inicial)),
-      contribution: Number(aporte),
+      contribution: Number(contributionForPeriod),
       final: Number(final)
     });
 

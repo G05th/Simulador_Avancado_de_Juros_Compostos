@@ -1,69 +1,102 @@
-( function(){
-    const navToggle = document.getElementById('navToggle');
-    const menu = document.getElementById('primaryMenu');
-    navToggle.addEventListener('click', () => {
-      const expanded = navToggle.getAttribute('aria-expanded') === 'true';
-      navToggle.setAttribute('aria-expanded', String(!expanded));
-      menu.classList.toggle('open');
-      menu.setAttribute('aria-hidden', String(expanded)); // inverte
-      if (!expanded) {
-        const first = menu.querySelector('[role="menuitem"]');
-        if (first) first.focus();
-      } else {
-        navToggle.focus();
+// NAV + DROPDOWN behaviour (place inside ../js/dropdowns.js or ../js/main.js)
+(function () {
+  const NAV_BREAKPOINT = 1118;
+  const navToggle = document.getElementById('nav-toggle');
+  const navMenu = document.getElementById('nav-menu');
+
+  if (!navToggle || !navMenu) return;
+
+  // Ensure aria attributes exist
+  if (!navToggle.hasAttribute('aria-expanded')) navToggle.setAttribute('aria-expanded', 'false');
+  navToggle.setAttribute('aria-controls', 'nav-menu');
+
+  // Toggle mobile menu
+  navToggle.addEventListener('click', (e) => {
+    const opened = navMenu.classList.toggle('show-menu');
+    navToggle.classList.toggle('show-icon', opened);
+    navToggle.setAttribute('aria-expanded', opened ? 'true' : 'false');
+    // lock background scroll when open on mobile
+    document.documentElement.style.overflow = opened ? 'hidden' : '';
+    document.body.style.overflow = opened ? 'hidden' : '';
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!navMenu.classList.contains('show-menu')) return;
+    if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
+      navMenu.classList.remove('show-menu');
+      navToggle.classList.remove('show-icon');
+      navToggle.setAttribute('aria-expanded', 'false');
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    }
+  });
+
+  // Close on ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (navMenu.classList.contains('show-menu')) {
+        navMenu.classList.remove('show-menu');
+        navToggle.classList.remove('show-icon');
+        navToggle.setAttribute('aria-expanded', 'false');
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
       }
-    });
-    const dropdowns = Array.from(document.querySelectorAll('.dropdown'));
-    dropdowns.forEach(drop => {
-      const btn = drop.querySelector('.dropdown-toggle');
-      const menuEl = drop.querySelector('.dropdown-menu');
+      // also close any opened dropdowns
+      document.querySelectorAll('.dropdown__item.open, .dropdown__subitem.open').forEach(d => d.classList.remove('open'));
+    }
+  });
 
-      btn.addEventListener('click', (e) => {
-        const isOpen = drop.classList.contains('open');
-        // close all
-        dropdowns.forEach(d => d.classList.remove('open'));
-        dropdowns.forEach(d => d.querySelector('.dropdown-toggle')?.setAttribute('aria-expanded','false'));
-        if (!isOpen) {
-          drop.classList.add('open');
-          btn.setAttribute('aria-expanded','true');
-          // focus first menu item
-          const first = menuEl.querySelector('[role="menuitem"]');
-          if (first) first.focus();
-        } else {
-          drop.classList.remove('open');
-          btn.setAttribute('aria-expanded','false');
-        }
-      });
+  // Close/hide menu when resizing to desktop
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > NAV_BREAKPOINT) {
+      if (navMenu.classList.contains('show-menu')) {
+        navMenu.classList.remove('show-menu');
+        navToggle.classList.remove('show-icon');
+        navToggle.setAttribute('aria-expanded', 'false');
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+      }
+    }
+  });
 
-      // Keyboard handling for Esc to close
-      drop.addEventListener('keydown', (evt) => {
-        if (evt.key === 'Escape') {
-          drop.classList.remove('open');
-          btn.setAttribute('aria-expanded','false');
-          btn.focus();
-        }
-      });
-    });
+  // DROPDOWN click behavior for mobile (and keyboard)
+  document.querySelectorAll('.dropdown__item, .dropdown__subitem').forEach(item => {
+    const toggle = item.querySelector('.nav__link, .dropdown__link');
+    const menu = item.querySelector('.dropdown__menu, .dropdown__submenu');
 
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.nav')) {
-        dropdowns.forEach(d => {
-          d.classList.remove('open');
-          d.querySelector('.dropdown-toggle')?.setAttribute('aria-expanded','false');
+    if (!toggle || !menu) return;
+
+    // On mobile / small screens, we want click-to-toggle
+    toggle.addEventListener('click', (ev) => {
+      if (window.innerWidth <= NAV_BREAKPOINT) {
+        ev.preventDefault();
+        const opening = !item.classList.contains('open');
+        // close sibling dropdowns at same level for better UX
+        const parent = item.parentElement;
+        parent && parent.querySelectorAll(':scope > .dropdown__item.open, :scope > .dropdown__subitem.open').forEach(sib => {
+          if (sib !== item) {
+            sib.classList.remove('open');
+            const sibMenu = sib.querySelector('.dropdown__menu, .dropdown__submenu');
+            if (sibMenu) sibMenu.style.maxHeight = null;
+          }
         });
-      }
-    });
-
-    // Close menu on Escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (menu.classList.contains('open')) {
-          menu.classList.remove('open');
-          navToggle.setAttribute('aria-expanded','false');
-          menu.setAttribute('aria-hidden','true');
-          navToggle.focus();
+        item.classList.toggle('open', opening);
+        if (opening) {
+          // set explicit height for smooth animation
+          menu.style.maxHeight = menu.scrollHeight + 'px';
+        } else {
+          menu.style.maxHeight = null;
         }
       }
     });
-  })();
+  });
+
+  // Prevent focus trap: when opening menu, focus first link
+  navToggle.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navToggle.click();
+    }
+  });
+})();
