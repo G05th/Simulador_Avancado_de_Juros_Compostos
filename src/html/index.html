@@ -241,6 +241,33 @@
     </div>
   </main>
 
+<script type="module">
+  import { requireAuth, logout } from '../js/auth.js';
+
+  const session = requireAuth();
+
+  if (session) {
+      // Update UI with user name
+      const navList = document.querySelector('.nav__list');
+      // Replace "Sobre" with User info
+      const userItem = document.createElement('li');
+      userItem.innerHTML = `<span class="nav__link" style="cursor:default">Olá, ${session.name}</span>`;
+
+      const logoutItem = document.createElement('li');
+      logoutItem.innerHTML = `<a href="#" class="nav__link" id="btnLogout">Sair</a>`;
+
+      // Clear existing list or append? Let's append/replace
+      // Ideally we should have a dedicated place.
+      // Let's just add them to the end.
+      navList.appendChild(userItem);
+      navList.appendChild(logoutItem);
+
+      document.getElementById('btnLogout').addEventListener('click', (e) => {
+          e.preventDefault();
+          logout();
+      });
+  }
+</script>
 <script type="module" src="../js/main.js"></script>
 <script src="../js/dropdowns.js"></script>
 

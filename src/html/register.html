@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cadastro — Simulador de Juros Compostos</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="auth-body">
+
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <i class="ri-planet-line auth-logo-icon"></i>
+      <h1>Criar Conta</h1>
+      <p class="muted">Comece a planejar seu futuro hoje</p>
+    </div>
+
+    <form id="registerForm" onsubmit="return false;">
+      <div class="form-group">
+        <label for="name">Nome</label>
+        <div class="input-wrapper">
+          <input id="name" type="text" placeholder="Seu nome" required />
+          <i class="ri-user-line input-icon"></i>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <div class="input-wrapper">
+          <input id="email" type="email" placeholder="seu@email.com" required />
+          <i class="ri-mail-line input-icon"></i>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <div class="input-wrapper">
+          <input id="password" type="password" placeholder="Mínimo 6 caracteres" minlength="6" required />
+          <i class="ri-lock-line input-icon"></i>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar Senha</label>
+        <div class="input-wrapper">
+          <input id="confirmPassword" type="password" placeholder="Repita a senha" required />
+          <i class="ri-lock-line input-icon"></i>
+        </div>
+      </div>
+
+      <div class="form-error hidden" id="formError"></div>
+
+      <button type="submit" class="btn primary full-width">Cadastrar</button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Já tem uma conta? <a href="login.html">Entrar</a></p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { register, requireGuest } from '../js/auth.js';
+
+  requireGuest();
+
+  document.getElementById('registerForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const errorDiv = document.getElementById('formError');
+
+    if (password !== confirmPassword) {
+      errorDiv.textContent = 'As senhas não coincidem.';
+      errorDiv.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      register(name, email, password);
+      window.location.href = 'index.html';
+    } catch (err) {
+      errorDiv.textContent = err.message;
+      errorDiv.classList.remove('hidden');
+      errorDiv.classList.add('shake');
+      setTimeout(() => errorDiv.classList.remove('shake'), 500);
+    }
+  });
+</script>
+
+</body>
+</html>
