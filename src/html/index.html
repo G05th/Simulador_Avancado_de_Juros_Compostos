@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Menu — Simulador de Juros Compostos</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.4.3/decimal.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link
     href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css"
     rel="stylesheet"
@@ -40,145 +44,201 @@
 <main id="mainContent" class="container" role="main" tabindex="-1">
     <section class="page-header">
       <div>
-        <h1>Simulador de Juros Compostos</h1>
-        <p class="muted">Preencha os dados e clique em Calcular. Abra Avançado para aportes e inflação.</p>
+        <h1>Simulador Profissional de Juros Compostos</h1>
+        <p class="muted">Ferramenta de alta precisão para planejamento financeiro e auditoria.</p>
       </div>
       <div class="controls-header">
-        <button class="btn ghost" id="btnReset">Reset</button>
+        <button class="btn ghost" id="btnReset">Limpar</button>
         <button class="btn primary" id="btnNew">Nova Simulação</button>
       </div>
     </section>
 
-    <section class="grid" aria-label="Área de simulação">
-      <!-- FORM -->
-      <form id="simForm" class="card" aria-labelledby="formTitle" onsubmit="return false;">
-        <h2 id="formTitle">Parâmetros da Simulação</h2>
+    <div class="grid-layout">
+      <!-- SIDEBAR: CONTROLS -->
+      <aside class="sidebar">
+        <form id="simForm" class="card" onsubmit="return false;">
+          <h2 class="card-title"><i class="ri-settings-3-line"></i> Parâmetros</h2>
 
-        <div class="row">
-          <div class="col">
-            <label for="capital">Capital inicial (AOA)</label>
-            <input id="capital" type="number" min="0" step="0.01" value="10000" required />
-            <div class="small">Ex.: 100000</div>
-          </div>
-          <div class="col">
-            <label for="rate">Taxa anual (%)</label>
-            <input id="rate" type="number" min="0" step="0.01" value="6" required />
-            <div class="small">Ex.: 6 (para 6% ao ano)</div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col">
-            <label for="period">Período</label>
-            <input id="period" type="number" min="1" step="1" value="10" required />
-            <div class="small">Número de anos ou meses (ver unidade)</div>
-          </div>
-          <div class="col">
-            <label for="periodUnit">Unidade</label>
-            <select id="periodUnit">
-              <option value="anos" selected>Anos</option>
-              <option value="meses">Meses</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col">
-            <label for="compounding">Capitalização</label>
-            <select id="compounding">
-              <option value="anual" selected>Anual</option>
-              <option value="mensal">Mensal</option>
-            </select>
+          <!-- Capital -->
+          <div class="form-group">
+            <label for="capital">Capital Inicial (PV)</label>
+            <div class="input-wrapper">
+              <input id="capital" type="number" min="0" step="0.01" value="10000" required />
+              <span class="currency-symbol">Kz</span>
+            </div>
           </div>
 
-          <div class="col">
-            <label for="localeCurrency">Moeda / Locale</label>
-            <select id="localeCurrency">
-              <option value="pt-AO|AOA" selected>pt-AO / AOA</option>
-              <option value="pt-BR|BRL" >pt-BR / BRL</option>
-              <option value="pt-PT|EUR">pt-PT / EUR</option>
-              <option value="en-US|USD">en-US / USD</option>
-            </select>
+          <!-- Taxa -->
+          <div class="form-group">
+            <label for="rate">Taxa de Juros (%)</label>
+            <div class="row-compact">
+              <input id="rate" type="number" min="0" step="0.0001" value="12" required />
+              <select id="compounding">
+                <option value="anual" selected>a.a.</option>
+                <option value="mensal">a.m.</option>
+                <option value="diaria">a.d.</option>
+                <option value="continua">Contínua</option>
+              </select>
+            </div>
+            <div class="small muted">Nominal</div>
           </div>
-        </div>
 
-        <hr>
+          <!-- Prazo -->
+          <div class="form-group">
+            <label>Prazo / Duração</label>
+            <div class="row-compact">
+              <input id="period" type="number" min="1" step="1" value="10" required />
+              <select id="periodUnit">
+                <option value="anos" selected>Anos</option>
+                <option value="meses">Meses</option>
+              </select>
+            </div>
+          </div>
 
-        <details id="advanced">
-          <summary>Avançado (Aportes e Inflação)</summary>
-          <div class="advanced-body">
-            <div class="row">
-              <div class="col">
-                <label for="contribution">Aporte periódico (valor)</label>
-                <input id="contribution" type="number" min="0" step="0.01" value="200" />
-                <div class="small">Ex.: 200 (mensal se unidade for meses)</div>
+          <div class="form-group">
+             <label for="startDate">Data de Início</label>
+             <input id="startDate" type="date" />
+          </div>
+
+          <hr class="divider">
+
+          <!-- Aportes -->
+          <details open>
+            <summary>Aportes Periódicos (PMT)</summary>
+            <div class="details-content">
+              <div class="form-group">
+                <label for="contribution">Valor do Aporte</label>
+                <input id="contribution" type="number" min="0" step="0.01" value="500" />
               </div>
-              <div class="col">
-                <label for="inflation">Inflação anual (%)</label>
-                <input id="inflation" type="number" min="0" step="0.01" value="3" />
-                <div class="small">Usado para calcular taxa real</div>
+              <div class="form-group">
+                <label for="contributionFreq">Frequência</label>
+                <select id="contributionFreq">
+                  <option value="mensal" selected>Mensal</option>
+                  <option value="anual">Anual</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Momento (Timing)</label>
+                <div class="radio-group">
+                  <label><input type="radio" name="timing" value="fim" checked> Fim (Ordinária)</label>
+                  <label><input type="radio" name="timing" value="inicio"> Início (Antecipada)</label>
+                </div>
               </div>
             </div>
-            <div class="small muted">Aportes são aplicados após juros de cada período (config padrão).</div>
+          </details>
+
+          <hr class="divider">
+
+          <!-- Avançado -->
+          <details>
+            <summary>Avançado (Inflação & Moeda)</summary>
+            <div class="details-content">
+              <div class="form-group">
+                <label for="inflation">Inflação Estimada (% a.a.)</label>
+                <input id="inflation" type="number" min="0" step="0.01" value="5" />
+              </div>
+              <div class="form-group">
+                <label for="localeCurrency">Moeda / Formato</label>
+                <select id="localeCurrency">
+                  <option value="pt-AO|AOA" selected>Angola (AOA)</option>
+                  <option value="pt-BR|BRL">Brasil (BRL)</option>
+                  <option value="en-US|USD">EUA (USD)</option>
+                  <option value="pt-PT|EUR">Europa (EUR)</option>
+                </select>
+              </div>
+            </div>
+          </details>
+
+          <div class="actions">
+            <button class="btn primary full-width" id="btnCalculate" type="button">
+              <i class="ri-calculator-line"></i> Calcular
+            </button>
           </div>
-        </details>
+        </form>
+      </aside>
 
-        <div class="actions">
-          <button class="btn primary" id="btnCalculate" type="button">Calcular</button>
-          <button class="btn ghost" id="btnExportCsv" type="button">Exportar CSV</button>
-          <div class="right small muted" aria-live="polite" id="status">Pronto</div>
-        </div>
-      </form>
-
-      <!-- RESULTS -->
-      <section class="card" aria-labelledby="resultsTitle">
-        <h2 id="resultsTitle">Resultados</h2>
-
-        <div class="result-block">
-          <div class="muted">Montante final (nominal)</div>
-          <div id="finalAmount" class="result-amount"> 0,00 Kz</div>
-          <div class="result-sub small muted" id="summaryRow">
-            <div>Taxa real: <span id="realRate">—</span></div>
-            <div>Períodos: <span id="periodsInfo">—</span></div>
+      <!-- MAIN: RESULTS -->
+      <section class="results-area">
+        <!-- KPI CARDS -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Valor Futuro (Nominal)</div>
+            <div class="kpi-value" id="finalAmount">---</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Valor Real (Ajustado)</div>
+            <div class="kpi-value" id="finalRealAmount">---</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total Investido</div>
+            <div class="kpi-value" id="totalInvested">---</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total Juros</div>
+            <div class="kpi-value highlight" id="totalInterest">---</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Taxa Real</div>
+            <div class="kpi-value" id="realRate">---</div>
           </div>
         </div>
 
-        <div>
-          <h3>Tabela de evolução</h3>
-          <div class="table-wrapper" id="tableWrapper" role="region" aria-label="Tabela de evolução">
-            <table id="amortTable" aria-describedby="tableDesc">
-              <caption id="tableDesc" class="visually-hidden">Evolução por período do investimento</caption>
+        <!-- TABS -->
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="chartTab">Gráfico</button>
+          <button class="tab-btn" data-tab="tableTab">Tabela Detalhada</button>
+          <button class="tab-btn" data-tab="auditTab">Auditoria</button>
+        </div>
+
+        <div class="tab-content" id="chartTab">
+          <div class="chart-container">
+            <canvas id="mainChart"></canvas>
+          </div>
+        </div>
+
+        <div class="tab-content hidden" id="tableTab">
+          <div class="toolbar">
+             <button class="btn sm" id="btnExportCsv"><i class="ri-file-excel-line"></i> CSV</button>
+             <button class="btn sm" id="btnExportPdf"><i class="ri-file-pdf-line"></i> PDF</button>
+          </div>
+          <div class="table-responsive">
+            <table id="scheduleTable" class="data-table">
               <thead>
                 <tr>
-                  <th scope="col">Período</th>
-                  <th scope="col" class="num">Saldo Inicial</th>
-                  <th scope="col" class="num">Juros</th>
-                  <th scope="col" class="num">Aporte</th>
-                  <th scope="col" class="num">Saldo Final</th>
+                  <th>#</th>
+                  <th>Data</th>
+                  <th>Saldo Inicial</th>
+                  <th>Juros</th>
+                  <th>Aporte</th>
+                  <th>Saldo Final</th>
+                  <th>Saldo Real</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td colspan="5" class="muted empty-cell">Sem dados — calcule acima</td></tr>
+                <tr><td colspan="7" class="text-center muted">Clique em Calcular</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <div>
-          <h3>Gráfico</h3>
-          <canvas id="chart" height="180" aria-label="Gráfico de evolução"></canvas>
+        <div class="tab-content hidden" id="auditTab">
+          <div class="audit-log" id="auditLog">
+            <p class="muted">Logs de cálculo aparecerão aqui.</p>
+          </div>
         </div>
 
-        <div class="card" style="margin-top:1rem">
-          <h3>Meus Cenários</h3>
-          <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
-            <input id="saveName" type="text" placeholder="Nome do cenário (ex: Aposentadoria)" style="flex:1;padding:8px;border-radius:6px;border:1px solid #eef4f5" />
-            <button class="btn primary" id="btnSaveScenario">Salvar</button>
-          </div>
-          <div id="savedList" style="max-height:220px;overflow:auto;border-top:1px dashed #eef4f5;padding-top:.5rem"></div>
+        <!-- Saved Scenarios -->
+        <div class="saved-section">
+            <h3><i class="ri-save-line"></i> Cenários Salvos</h3>
+            <div class="save-controls">
+                <input id="saveName" type="text" placeholder="Nome do cenário..." />
+                <button class="btn secondary" id="btnSaveScenario">Salvar Atual</button>
+            </div>
+            <div id="savedList" class="saved-list"></div>
         </div>
+
       </section>
-    </section>
+    </div>
   </main>
 
 <script type="module" src="../js/main.js"></script>
