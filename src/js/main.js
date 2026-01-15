@@ -142,7 +142,7 @@ function renderChart(timeline){
                                 label += ': ';
                             }
                             if (context.parsed.y !== null) {
-                                label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y); // Simplified currency for tooltip
+                                label += new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(context.parsed.y); // Kwanza for tooltip
                             }
                             return label;
                         }
@@ -269,6 +269,7 @@ function handleReset() {
             $('finalAmount').textContent = '---';
             $('totalInvested').textContent = '---';
             $('totalInterest').textContent = '---';
+            $('finalRealAmount').textContent = '---';
             $('realRate').textContent = '---';
             if(chartInstance) { chartInstance.destroy(); chartInstance = null; }
             document.querySelector('#scheduleTable tbody').innerHTML = '<tr><td colspan="6" class="text-center muted">Clique em Calcular</td></tr>';
