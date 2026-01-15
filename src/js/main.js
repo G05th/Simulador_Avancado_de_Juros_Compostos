@@ -1,4 +1,5 @@
 import { generateTimeline } from './calc.js';
+import { showModal } from './modal.js';
 import { listScenarios, loadScenario, saveScenario } from './storage.js';
 
 console.log('main.js loaded');
@@ -205,13 +206,13 @@ function handleCalculate() {
 
     } catch (e) {
         console.error(e);
-        alert('Erro no cálculo: ' + e.message);
+        showModal({ title: 'Erro', message: 'Erro no cálculo: ' + e.message, type: 'alert' });
     }
 }
 
 function handleExportCsv() {
     const timeline = window.__lastTimeline;
-    if(!timeline) return alert('Sem dados.');
+    if(!timeline) return showModal({ message: 'Sem dados para exportar.', type: 'alert' });
 
     // Use XLSX lib for CSV to handle special chars better? Or simple string
     // Let's use simple string for CSV
@@ -229,7 +230,7 @@ function handleExportCsv() {
 
 function handleExportPdf() {
     const timeline = window.__lastTimeline;
-    if(!timeline) return alert('Sem dados.');
+    if(!timeline) return showModal({ message: 'Sem dados para exportar.', type: 'alert' });
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -257,23 +258,29 @@ function handleExportPdf() {
 }
 
 function handleReset() {
-    if(!confirm('Limpar tudo?')) return;
-    $('simForm').reset();
-    // Reset defaults manually if needed or rely on form reset
-    // Clear results
-    $('finalAmount').textContent = '---';
-    $('totalInvested').textContent = '---';
-    $('totalInterest').textContent = '---';
-    $('realRate').textContent = '---';
-    if(chartInstance) { chartInstance.destroy(); chartInstance = null; }
-    document.querySelector('#scheduleTable tbody').innerHTML = '<tr><td colspan="6" class="text-center muted">Clique em Calcular</td></tr>';
+    showModal({
+        title: 'Confirmar',
+        message: 'Tem certeza que deseja limpar tudo?',
+        type: 'confirm',
+        onConfirm: () => {
+            $('simForm').reset();
+            // Reset defaults manually if needed or rely on form reset
+            // Clear results
+            $('finalAmount').textContent = '---';
+            $('totalInvested').textContent = '---';
+            $('totalInterest').textContent = '---';
+            $('realRate').textContent = '---';
+            if(chartInstance) { chartInstance.destroy(); chartInstance = null; }
+            document.querySelector('#scheduleTable tbody').innerHTML = '<tr><td colspan="6" class="text-center muted">Clique em Calcular</td></tr>';
+        }
+    });
 }
 
 function handleSaveScenario() {
     const name = ($('saveName').value || '').trim();
-    if(!name) return alert('Digite um nome.');
+    if(!name) return showModal({ message: 'Por favor, digite um nome para o cenário.', type: 'alert' });
 
-    if(!window.__lastParams) return alert('Calcule primeiro.');
+    if(!window.__lastParams) return showModal({ message: 'Realize um cálculo antes de salvar.', type: 'alert' });
 
     const data = {
         params: window.__lastParams,
@@ -282,7 +289,7 @@ function handleSaveScenario() {
 
     saveScenario(name, data, { overwrite: true }); // Simple overwrite for now
     renderSavedList();
-    alert('Salvo!');
+    showModal({ title: 'Sucesso', message: 'Cenário salvo com sucesso!', type: 'alert' });
 }
 
 function renderSavedList() {

@@ -1,0 +1,116 @@
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Container */
+.modal-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+}
+
+.modal-overlay.active .modal-container {
+    transform: scale(1);
+}
+
+/* Modal Header */
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 12px;
+}
+
+/* Modal Body */
+.modal-message {
+    font-size: 1rem;
+    color: #4b5563;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* Modal Footer (Buttons) */
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.modal-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    border: none;
+    outline: none;
+}
+
+.modal-btn:active {
+    transform: scale(0.96);
+}
+
+.modal-btn-primary {
+    background-color: #0ea5a4;
+    color: white;
+}
+
+.modal-btn-primary:hover {
+    background-color: #0b8c8b;
+}
+
+.modal-btn-secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.modal-btn-secondary:hover {
+    background-color: #d1d5db;
+}
+
+/* Dark Mode Support (if applicable, based on existing styles) */
+@media (prefers-color-scheme: dark) {
+    .modal-container {
+        background: #1f2937;
+        color: #f3f4f6;
+    }
+    .modal-title {
+        color: #f3f4f6;
+    }
+    .modal-message {
+        color: #d1d5db;
+    }
+    .modal-btn-secondary {
+        background-color: #374151;
+        color: #e5e7eb;
+    }
+    .modal-btn-secondary:hover {
+        background-color: #4b5563;
+    }
+}
